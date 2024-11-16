@@ -250,8 +250,14 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
 
     this.doStartupConfigLoad();
 
-    for (Map.Entry<String, String> entry : configuration.getServers().entrySet()) {
-      servers.register(new ServerInfo(entry.getKey(), AddressUtil.parseAddress(entry.getValue())));
+    for (ServerInfo cliServer : options.getServers()) {
+      servers.register(cliServer);
+    }
+
+    if (!options.isIgnoreConfigServers()) {
+      for (Map.Entry<String, String> entry : configuration.getServers().entrySet()) {
+        servers.register(new ServerInfo(entry.getKey(), AddressUtil.parseAddress(entry.getValue())));
+      }
     }
 
     ipAttemptLimiter = Ratelimiters.createWithMilliseconds(configuration.getLoginRatelimit());
