@@ -38,6 +38,7 @@ import com.velocitypowered.api.event.player.PlayerModInfoEvent;
 import com.velocitypowered.api.event.player.PlayerSettingsChangedEvent;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.player.configuration.PlayerEnterConfigurationEvent;
+import com.velocitypowered.api.network.HandshakeIntent;
 import com.velocitypowered.api.network.ProtocolState;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.permission.PermissionFunction;
@@ -156,6 +157,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   private final MinecraftConnection connection;
   private final @Nullable InetSocketAddress virtualHost;
   private final @Nullable String rawVirtualHost;
+  private final HandshakeIntent handshakeIntent;
   private GameProfile profile;
   private PermissionFunction permissionFunction;
   private int tryIndex = 0;
@@ -193,12 +195,13 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
 
   ConnectedPlayer(VelocityServer server, GameProfile profile, MinecraftConnection connection,
                   @Nullable InetSocketAddress virtualHost, @Nullable String rawVirtualHost, boolean onlineMode,
-                  @Nullable IdentifiedKey playerKey) {
+                  HandshakeIntent handshakeIntent, @Nullable IdentifiedKey playerKey) {
     this.server = server;
     this.profile = profile;
     this.connection = connection;
     this.virtualHost = virtualHost;
     this.rawVirtualHost = rawVirtualHost;
+    this.handshakeIntent = handshakeIntent;
     this.permissionFunction = PermissionFunction.ALWAYS_UNDEFINED;
     this.connectionPhase = connection.getType().getInitialClientPhase();
     this.onlineMode = onlineMode;
@@ -1289,6 +1292,11 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   public void switchToConfigState() {
     server.getEventManager().fire(new PlayerEnterConfigurationEvent(this, getConnectionInFlightOrConnectedServer()))
         .completeOnTimeout(null, 5, TimeUnit.SECONDS).thenRunAsync(() -> {
+          // if the connection was closed earlier, there is a risk that the player is no longer connected
+          if (!connection.getChannel().isActive()) {
+            return;
+          }
+
           if (bundleHandler.isInBundleSession()) {
             bundleHandler.toggleBundleSession();
             connection.write(BundleDelimiterPacket.INSTANCE);
@@ -1338,6 +1346,11 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   @Override
   public ProtocolState getProtocolState() {
     return connection.getState().toProtocolState();
+  }
+
+  @Override
+  public HandshakeIntent getHandshakeIntent() {
+    return handshakeIntent;
   }
 
   private final class ConnectionRequestBuilderImpl implements ConnectionRequestBuilder {
