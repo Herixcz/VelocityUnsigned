@@ -172,22 +172,24 @@ public final class VelocityCommand {
       source.sendMessage(velocity);
       source.sendMessage(copyright);
 
-      final TextComponent embellishment = Component.text()
-          .append(Component.text().content("Download now from ")
-                  .color(NamedTextColor.GRAY)
-                  .build())
-          .append(Component.text().content("GitHub - @ygmpxwn/VelocityUnsigned")
-                  .color(NamedTextColor.YELLOW)
-                  .clickEvent(ClickEvent.openUrl(
-                          "https://github.com/ygmpxwn/VelocityUnsigned"))
-                  .build())
-          .append(Component.text().content(" (Click)")
-                  .color(NamedTextColor.GRAY)
-                  .clickEvent(ClickEvent.openUrl(
-                          "https://github.com/ygmpxwn/VelocityUnsigned"))
-                  .build())
-          .build();
-      source.sendMessage(embellishment);
+      if (version.getName().equals("Velocity")) {
+        final TextComponent embellishment = Component.text()
+            .append(Component.text()
+                .content("PaperMC")
+                .color(NamedTextColor.GREEN)
+                .clickEvent(ClickEvent.openUrl(VelocityServer.VELOCITY_URL))
+                .build())
+            .append(Component.text(" - "))
+            .append(Component.text()
+                .content("GitHub")
+                .color(NamedTextColor.GREEN)
+                .decoration(TextDecoration.UNDERLINED, true)
+                .clickEvent(ClickEvent.openUrl(
+                    "https://github.com/PaperMC/Velocity"))
+                .build())
+            .build();
+        source.sendMessage(embellishment);
+      }
       return Command.SINGLE_SUCCESS;
     }
   }
