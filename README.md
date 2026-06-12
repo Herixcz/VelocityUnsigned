@@ -21,3 +21,9 @@ page.
 You can merge new commits from `PaperMC/Velocity - dev/3.0.0` to `ygmpxwn/VelocityUnsigned - dev/3.0.0` using:
 1. `git fetch upstream`
 2. `git merge upstream/dev/3.0.0`
+
+# Localisation
+
+Translations are handled using [Crowdin](https://papermc-io.crowdin.com/velocity).
+If you want to translate a language not available on Crowdin,
+you might want to ask in the [Discord](https://discord.gg/papermc) about it.
